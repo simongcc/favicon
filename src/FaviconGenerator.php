@@ -188,14 +188,14 @@ class FaviconGenerator
             throw new RuntimeException('Class Imagick not found');
         }
 
-        if (file_exists("{$this->root}/favicon/.settings")) {
-            $this->settings = json_decode(file_get_contents("{$this->root}/favicon/.settings"), true);
-        } else {
+        // if (file_exists("{$this->root}/favicon/.settings")) {
+        //     $this->settings = json_decode(file_get_contents("{$this->root}/favicon/.settings"), true);
+        // } else {
             $this->settings = array(
                 'compression' => self::COMPRESSION_ORIGINAL,
                 'cropmethod'  => self::CROPMETHOD_CENTER
             );
-        }
+        // }
 
         if (
             file_exists("{$this->root}/favicon/.original") === false ||
