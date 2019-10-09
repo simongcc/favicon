@@ -349,7 +349,7 @@ class FaviconGenerator
     final public function createBasic()
     {
         foreach (array('16x16', '32x32', '96x96') as $size) {
-            if ($this->created || file_exists("{$this->root}/favicon/favicon-{$size}.png") == false) {
+            if (($this->created || file_exists("{$this->root}/favicon/favicon-{$size}.png") == false || $this->settings['overwrite'])) {
                 $image = $this->createImage($size);
 
                 $image->writeimage("{$this->root}/favicon/favicon-{$size}.png");
@@ -371,7 +371,7 @@ class FaviconGenerator
             array('57x57', '60x60', '72x72', '76x76', '114x114', '120x120', '144x144', '152x152', '180x180')
             as $size
         ) {
-            if ($this->created || file_exists("{$this->root}/favicon/apple-touch-icon-{$size}.png") == false) {
+            if ($this->created || file_exists("{$this->root}/favicon/apple-touch-icon-{$size}.png") == false || $this->settings['overwrite']) {
                 $image = $this->createImage($size);
                 $image = $this->setColorAndMargin($image, 'apple-background', 'apple-margin');
 
@@ -458,7 +458,7 @@ class FaviconGenerator
             array('36x36', '48x48', '72x72', '96x96', '144x144', '192x192')
             as $size
         ) {
-            if ($this->created || file_exists("{$this->root}/favicon/android-chrome-{$size}.png") == false) {
+            if ($this->created || file_exists("{$this->root}/favicon/android-chrome-{$size}.png") == false || $this->settings['overwrite'] ) {
                 $image = $this->createImage($size);
                 $image = $this->setColorAndMargin($image, 'android-background', 'android-margin');
 
@@ -489,7 +489,7 @@ class FaviconGenerator
     final public function createMicrosoft()
     {
         foreach (array('70x70', '144x144', '150x150', '310x310', '310x150') as $size) {
-            if ($this->created || file_exists("{$this->root}/favicon/mstile-{$size}.png") == false) {
+            if ($this->created || file_exists("{$this->root}/favicon/mstile-{$size}.png") == false || $this->settings['overwrite']) {
                 if ($size == '310x150') {
                     $image = $this->createImage('150x150');
                     $image->borderImage(new ImagickPixel('none'), 80, 0);
