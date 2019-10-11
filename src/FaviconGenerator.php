@@ -198,7 +198,9 @@ class FaviconGenerator
      */
     final public function __destruct()
     {
-        file_put_contents("{$this->root}/favicon/.settings", json_encode($this->settings));
+        if( $this->settings['settings-to-file'] ) {
+            file_put_contents("{$this->settings['output-path']}{$this->settings['output-folder-name']}/.settings", json_encode($this->settings));
+        }
     }
 
     /**
@@ -309,6 +311,7 @@ class FaviconGenerator
             'use-memory'  => true,
             'compression' =>  self::COMPRESSION_ORIGINAL,
             'cropmethod'  =>  self::CROPMETHOD_CENTER,
+            'settings-to-file' => false,
             'output-folder-name' => 'favicon',
             'output-path' => '',
             'root'        => $this->root,
