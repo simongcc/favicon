@@ -166,6 +166,13 @@ class FaviconGenerator
     */
     private $settings = array();
 
+   /**
+    * original image path.
+    * @var string
+    * @access private
+    */
+    private $original;
+
     /**
      * Validation and installation defaults.
      * @param string $icon
@@ -178,6 +185,8 @@ class FaviconGenerator
     {
         $this->created = $created;
         $this->root = php_sapi_name() == 'cli' ? dirname(__FILE__) : $_SERVER['DOCUMENT_ROOT'];
+        $this->original = $icon;
+
         if (empty($icon)) {
             $icon = "{$this->settings['output-path']}{$this->settings['output-folder-name']}/.original";
         }
@@ -374,6 +383,7 @@ class FaviconGenerator
                 @copy($icon, "{$this->settings['output-path']}{$this->settings['output-folder-name']}/.original");
                 $this->created == true;
             }
+            $this->original = "{$this->settings['output-path']}{$this->settings['output-folder-name']}/.original";
         }
 
         return true;
@@ -690,7 +700,8 @@ class FaviconGenerator
     {
         list($sizes['width'], $sizes['height']) = explode('x', $size);
 
-        $original = new Imagick("{$this->root}/favicon/.original");
+        // $original = new Imagick("{$this->settings['output-path']}{$this->settings['output-folder-name']}/.original");
+        $original = new Imagick($this->original);
 
         $source = $original->getImageGeometry();
 
