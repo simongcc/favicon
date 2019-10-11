@@ -314,6 +314,7 @@ class FaviconGenerator
             'settings-to-file' => false,
             'output-folder-name' => 'favicon',
             'output-path' => '',
+            'demo'        => false,
             'root'        => $this->root,
             'relative-path' => '',
         );
@@ -341,6 +342,10 @@ class FaviconGenerator
             $this->settings['relative-path'] = '/' . $this->settings['output-folder-name'];
         }
 
+        if( $this->settings['demo'] ) {
+            print_r($this->settings);
+            return;
+        }
          // if (file_exists("{$this->settings['output-path']}{$this->settings['output-folder-name']}/.settings")) {
         //     $this->settings = json_decode(file_get_contents("{$this->settings['output-path']}{$this->settings['output-folder-name']}/.settings"), true);
         // } else {
