@@ -177,8 +177,7 @@ class FaviconGenerator
     final public function __construct($icon = '', $created = false)
     {
         $this->created = $created;
-        $this->root = php_sapi_name() == 'cli' ? __DIR__ : $_SERVER['DOCUMENT_ROOT'];
-        
+        $this->root = php_sapi_name() == 'cli' ? dirname(__FILE__) : $_SERVER['DOCUMENT_ROOT'];
         if (empty($icon)) {
             $icon = "{$this->root}/favicon/.original";
         }
