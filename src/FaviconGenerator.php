@@ -441,9 +441,11 @@ class FaviconGenerator
     {
         $replace = false;
 
-        $manifest = file_exists("{$this->settings['output-path']}{$this->settings['output-folder-name']}/manifest.json") ?
-                            json_decode(file_get_contents("{$this->settings['output-path']}{$this->settings['output-folder-name']}/manifest.json"), true) :
-                            array();
+        if( !$this->created && file_exists("{$this->settings['output-path']}{$this->settings['output-folder-name']}/manifest.json") ) {
+            json_decode(file_get_contents("{$this->settings['output-path']}{$this->settings['output-folder-name']}/manifest.json"), true);
+        } else {
+            $manifest = array();
+        }
 
         if (
             isset($this->settings['android-name']) &&
