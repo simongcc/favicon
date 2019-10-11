@@ -179,7 +179,7 @@ class FaviconGenerator
         $this->created = $created;
         $this->root = php_sapi_name() == 'cli' ? dirname(__FILE__) : $_SERVER['DOCUMENT_ROOT'];
         if (empty($icon)) {
-            $icon = "{$this->root}/favicon/.original";
+            $icon = "{$this->settings['output-path']}{$this->settings['output-folder-name']}/.original";
         }
 
         if (file_exists($icon) === false) {
@@ -187,24 +187,6 @@ class FaviconGenerator
         }
         if (class_exists('Imagick') === false) {
             throw new RuntimeException('Class Imagick not found');
-        }
-
-        // if (file_exists("{$this->root}/favicon/.settings")) {
-        //     $this->settings = json_decode(file_get_contents("{$this->root}/favicon/.settings"), true);
-        // } else {
-            $this->settings = array(
-                'compression' => self::COMPRESSION_ORIGINAL,
-                'cropmethod'  => self::CROPMETHOD_CENTER
-            );
-        // }
-
-        if (
-            file_exists("{$this->root}/favicon/.original") === false ||
-            filesize($icon) != filesize("{$this->root}/favicon/.original")
-        ) {
-            @mkdir("{$this->root}/favicon", 0755);
-            @copy($icon, "{$this->root}/favicon/.original");
-            $this->created == true;
         }
     }
 
@@ -323,6 +305,16 @@ class FaviconGenerator
      */
     final public function setConfig($config = array())
     {
+        $default = array(
+            'use-memory'  => true,
+            'compression' =>  self::COMPRESSION_ORIGINAL,
+            'cropmethod'  =>  self::CROPMETHOD_CENTER,
+            'output-folder-name' => 'favicon',
+            'output-path' => '',
+            'root'        => $this->root,
+            'relative-path' => '',
+        );
+
         if (is_array($config) === false || count($config) < 1) {
             throw new RuntimeException('Invalid configuration');
         }
@@ -333,8 +325,46 @@ class FaviconGenerator
                 (array_key_exists($key, $this->settings) && $this->settings[$key] !== $value)
             ) {
                 $this->created == true;
-                $this->settings = array_merge($this->settings, $config);
+                $this->settings = array_merge($default, $config);
                 break;
+            }
+        }
+
+        if( empty($this->settings['output-path']) ) {
+            $this->settings['output-path'] = "{$this->root}/";
+        }
+
+        if( empty($this->settings['relative-path']) ) {
+            $this->settings['relative-path'] = '/' . $this->settings['output-folder-name'];
+        }
+
+         // if (file_exists("{$this->settings['output-path']}{$this->settings['output-folder-name']}/.settings")) {
+        //     $this->settings = json_decode(file_get_contents("{$this->settings['output-path']}{$this->settings['output-folder-name']}/.settings"), true);
+        // } else {
+            // $this->settings = array(
+            //     'compression' => self::COMPRESSION_ORIGINAL,
+            //     'cropmethod'  => self::CROPMETHOD_CENTER
+            // );
+        // }
+
+        // create output folder
+        $output_folder = "{$this->settings['output-path']}{$this->settings['output-folder-name']}";
+        if( !is_dir($output_folder) ) {
+            @mkdir($output_folder, 0755);
+        }
+
+        // check to see if create original
+        if( $this->settings['use-memory'] ) {
+            // maybe add another option to overwrite existing original
+        } else {
+            // create original file
+            if (
+                file_exists("{$this->settings['output-path']}{$this->settings['output-folder-name']}/.original") === false ||
+                filesize($icon) != filesize("{$this->settings['output-path']}{$this->settings['output-folder-name']}/.original")
+            ) {
+                // @mkdir("{$this->settings['output-path']}{$this->settings['output-folder-name']}", 0755);
+                @copy($icon, "{$this->settings['output-path']}{$this->settings['output-folder-name']}/.original");
+                $this->created == true;
             }
         }
 
@@ -350,10 +380,10 @@ class FaviconGenerator
     final public function createBasic()
     {
         foreach (array('16x16', '32x32', '96x96') as $size) {
-            if ( $this->created || file_exists("{$this->root}/favicon/favicon-{$size}.png") == false ) {
+            if ( $this->created || file_exists("{$this->settings['output-path']}{$this->settings['output-folder-name']}/favicon-{$size}.png") == false ) {
                 $image = $this->createImage($size);
 
-                $image->writeimage("{$this->root}/favicon/favicon-{$size}.png");
+                $image->writeimage("{$this->settings['output-path']}{$this->settings['output-folder-name']}/favicon-{$size}.png");
             }
         }
 
@@ -372,11 +402,11 @@ class FaviconGenerator
             array('57x57', '60x60', '72x72', '76x76', '114x114', '120x120', '144x144', '152x152', '180x180')
             as $size
         ) {
-            if ($this->created || file_exists("{$this->root}/favicon/apple-touch-icon-{$size}.png") == false ) {
+            if ($this->created || file_exists("{$this->settings['output-path']}{$this->settings['output-folder-name']}/apple-touch-icon-{$size}.png") == false ) {
                 $image = $this->createImage($size);
                 $image = $this->setColorAndMargin($image, 'apple-background', 'apple-margin');
 
-                $image->writeimage("{$this->root}/favicon/apple-touch-icon-{$size}.png");
+                $image->writeimage("{$this->settings['output-path']}{$this->settings['output-folder-name']}/apple-touch-icon-{$size}.png");
             }
         }
 
@@ -393,8 +423,8 @@ class FaviconGenerator
     {
         $replace = false;
 
-        $manifest = file_exists("{$this->root}/favicon/manifest.json") ?
-                            json_decode(file_get_contents("{$this->root}/favicon/manifest.json"), true) :
+        $manifest = file_exists("{$this->settings['output-path']}{$this->settings['output-folder-name']}/manifest.json") ?
+                            json_decode(file_get_contents("{$this->settings['output-path']}{$this->settings['output-folder-name']}/manifest.json"), true) :
                             array();
 
         if (
@@ -459,15 +489,15 @@ class FaviconGenerator
             array('36x36', '48x48', '72x72', '96x96', '144x144', '192x192')
             as $size
         ) {
-            if ($this->created || file_exists("{$this->root}/favicon/android-chrome-{$size}.png") == false ) {
+            if ($this->created || file_exists("{$this->settings['output-path']}{$this->settings['output-folder-name']}/android-chrome-{$size}.png") == false ) {
                 $image = $this->createImage($size);
                 $image = $this->setColorAndMargin($image, 'android-background', 'android-margin');
 
-                $image->writeimage("{$this->root}/favicon/android-chrome-{$size}.png");
+                $image->writeimage("{$this->settings['output-path']}{$this->settings['output-folder-name']}/android-chrome-{$size}.png");
             }
 
             $manifest['icons'][] = array(
-                'src'     => "/favicon/android-chrome-{$size}.png",
+                'src'     => "{$this->settings['relative-path']}android-chrome-{$size}.png",
                 'sizes'    => $size,
                 'type'    => 'image/png',
                 'density' => $mapDensity[$size]
@@ -475,7 +505,7 @@ class FaviconGenerator
         }
 
         if ($replace && count($manifest) > 0) {
-            file_put_contents("{$this->root}/favicon/manifest.json", json_encode($manifest));
+            file_put_contents("{$this->settings['output-path']}{$this->settings['output-folder-name']}/manifest.json", json_encode($manifest));
         }
 
         return true;
@@ -490,7 +520,7 @@ class FaviconGenerator
     final public function createMicrosoft()
     {
         foreach (array('70x70', '144x144', '150x150', '310x310', '310x150') as $size) {
-            if ($this->created || file_exists("{$this->root}/favicon/mstile-{$size}.png") == false ) {
+            if ($this->created || file_exists("{$this->settings['output-path']}{$this->settings['output-folder-name']}/mstile-{$size}.png") == false ) {
                 if ($size == '310x150') {
                     $image = $this->createImage('150x150');
                     $image->borderImage(new ImagickPixel('none'), 80, 0);
@@ -498,20 +528,20 @@ class FaviconGenerator
                     $image = $this->createImage($size);
                 }
 
-                $image->writeimage("{$this->root}/favicon/mstile-{$size}.png");
+                $image->writeimage("{$this->settings['output-path']}{$this->settings['output-folder-name']}/mstile-{$size}.png");
             }
         }
 
-        if (file_exists("{$this->root}/favicon/browserconfig.xml") === false || $this->created) {
+        if (file_exists("{$this->settings['output-path']}{$this->settings['output-folder-name']}/browserconfig.xml") === false || $this->created) {
             $browserconfig =
 "<?xml version=\"1.0\" encoding=\"utf-8\"?>
 <browserconfig>
     <msapplication>
         <tile>
-            <square70x70logo src=\"/favicon/mstile-70x70.png\"/>
-            <square150x150logo src=\"/favicon/mstile-150x150.png\"/>
-            <square310x310logo src=\"/favicon/mstile-310x310.png\"/>
-            <wide310x150logo src=\"/favicon/mstile-310x150.png\"/>
+            <square70x70logo src=\"{$this->settings['relative-path']}mstile-70x70.png\"/>
+            <square150x150logo src=\"{$this->settings['relative-path']}mstile-150x150.png\"/>
+            <square310x310logo src=\"{$this->settings['relative-path']}mstile-310x310.png\"/>
+            <wide310x150logo src=\"{$this->settings['relative-path']}mstile-310x150.png\"/>
             <TileColor>" .
             (
                 isset($this->settings['ms-background']) ?
@@ -523,7 +553,7 @@ class FaviconGenerator
     </msapplication>
 </browserconfig>";
 
-            file_put_contents("{$this->root}/favicon/browserconfig.xml", $browserconfig);
+            file_put_contents("{$this->settings['output-path']}{$this->settings['output-folder-name']}/browserconfig.xml", $browserconfig);
         }
 
         return true;
@@ -556,8 +586,8 @@ class FaviconGenerator
         $html = '';
 
         foreach (array('16x16', '32x32', '96x96') as $size) {
-            if (file_exists("{$this->root}/favicon/favicon-{$size}.png")) {
-                $html .= "<link rel=\"icon\" type=\"image/png\" href=\"/favicon/favicon-{$size}.png\" sizes=\"{$size}\">\n";
+            if (file_exists("{$this->settings['output-path']}{$this->settings['output-folder-name']}/favicon-{$size}.png")) {
+                $html .= "<link rel=\"icon\" type=\"image/png\" href=\"{$this->settings['relative-path']}favicon-{$size}.png\" sizes=\"{$size}\">\n";
             }
         }
 
@@ -565,20 +595,20 @@ class FaviconGenerator
             array('57x57', '60x60', '72x72', '76x76', '114x114', '120x120', '144x144', '152x152', '180x180')
             as $size
         ) {
-            if (file_exists("{$this->root}/favicon/apple-touch-icon-{$size}.png")) {
-                $html .= "<link rel=\"apple-touch-icon\" sizes=\"{$size}\" href=\"/favicon/apple-touch-icon-{$size}.png\">\n";
+            if (file_exists("{$this->settings['output-path']}{$this->settings['output-folder-name']}/apple-touch-icon-{$size}.png")) {
+                $html .= "<link rel=\"apple-touch-icon\" sizes=\"{$size}\" href=\"{$this->settings['relative-path']}apple-touch-icon-{$size}.png\">\n";
             }
         }
 
-        if (file_exists("{$this->root}/favicon/android-chrome-192x192.png")) {
-            $html .= "<link rel=\"icon\" type=\"image/png\" href=\"/favicon/android-chrome-192x192.png\" sizes=\"192x192\">\n";
+        if (file_exists("{$this->settings['output-path']}{$this->settings['output-folder-name']}/android-chrome-192x192.png")) {
+            $html .= "<link rel=\"icon\" type=\"image/png\" href=\"{$this->settings['relative-path']}android-chrome-192x192.png\" sizes=\"192x192\">\n";
         }
-        if (file_exists("{$this->root}/favicon/manifest.json")) {
-            $html .= "<link rel=\"manifest\" href=\"/favicon/manifest.json\">\n";
+        if (file_exists("{$this->settings['output-path']}{$this->settings['output-folder-name']}/manifest.json")) {
+            $html .= "<link rel=\"manifest\" href=\"{$this->settings['relative-path']}manifest.json\">\n";
         }
 
-        if (file_exists("{$this->root}/favicon/mstile-144x144.png")) {
-            $html .= "<meta name=\"msapplication-TileImage\" content=\"/favicon/mstile-144x144.png\">\n";
+        if (file_exists("{$this->settings['output-path']}{$this->settings['output-folder-name']}/mstile-144x144.png")) {
+            $html .= "<meta name=\"msapplication-TileImage\" content=\"{$this->settings['relative-path']}mstile-144x144.png\">\n";
         }
         if (isset($this->settings['ms-background'])) {
             $html .= "<meta name=\"msapplication-TileColor\" content=\"#{$this->settings['ms-background']}\">\n";
