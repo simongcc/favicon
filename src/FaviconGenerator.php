@@ -205,12 +205,12 @@ class FaviconGenerator
      * @access public
      * @final
      */
-    final public function __destruct()
-    {
-        if( $this->settings['settings-to-file'] ) {
-            file_put_contents("{$this->settings['output-path']}{$this->settings['output-folder-name']}/.settings", json_encode($this->settings));
-        }
-    }
+    // final public function __destruct()
+    // {
+    //     if( !empty($this->settings['settings-to-file']) && $this->settings['settings-to-file'] ) {
+    //         file_put_contents("{$this->settings['output-path']}{$this->settings['output-folder-name']}/.settings", json_encode($this->settings));
+    //     }
+    // }
 
     /**
      * Sets the compression ratio favicon.
