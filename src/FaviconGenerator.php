@@ -185,18 +185,47 @@ class FaviconGenerator
     {
         $this->created = $created;
         $this->root = php_sapi_name() == 'cli' ? dirname(__FILE__) : $_SERVER['DOCUMENT_ROOT'];
-        $this->original = $icon;
+        
+        $this->icon = $icon;
+    }
 
-        if (empty($icon)) {
+    public function check_file() {
+        
+        if ( empty($this->icon) && file_exists("{$this->settings['output-path']}{$this->settings['output-folder-name']}/.original") ) {
             $icon = "{$this->settings['output-path']}{$this->settings['output-folder-name']}/.original";
+        } else if( !file_exists($this->icon) ) {
+            $this->error = 'File not specified';
+
+            return array(
+                'result' => false,
+                'error' => $this->error,
+            );
         }
 
-        if (file_exists($icon) === false) {
-            throw new RuntimeException('File not found', 404);
+        if ( class_exists('Imagick') === false ) {
+            $this->error = 'Class Imagick not found';
+            // die('Class Imagick not found');
+            // throw new RuntimeException('Class Imagick not found');
+            return array(
+                'result' => false,
+                'error' => $this->error,
+            );
         }
-        if (class_exists('Imagick') === false) {
-            throw new RuntimeException('Class Imagick not found');
+
+        if ( file_exists($this->icon) === false ) {
+            $this->error = 'File not found';
+            // die('File not found');
+            // throw new RuntimeException('File not found', 404);
+            return array(
+                'result' => false,
+                'error' => $this->error,
+            );
         }
+
+        $this->original = $this->icon;
+        return array(
+            'result' => true,
+        );
     }
 
     /**
